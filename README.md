@@ -2,6 +2,8 @@
 
 A lightweight translate widget for the Omarchy Quattro bar. Click the bar icon to open a small panel, type or paste text, pick a source and target language, and get a translation from [translate-shell](https://github.com/soimort/translate-shell) (`trans`) without leaving the bar.
 
+![oyaku control panel](preview.png)
+
 ## Prerequisites
 
 Oyaku shells out to `trans`, so **translate-shell must be installed**:

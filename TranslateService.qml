@@ -18,15 +18,8 @@ Item {
   property string _stderr: ""
   property var _pending: null
   property bool _aborting: false
-  property real _startTime: 0
 
   signal availabilityChecked()
-
-  function dbg(msg) {
-    var elapsed = root._startTime ? (Date.now() - root._startTime) : 0
-    var line = "[OYAKU " + elapsed + "ms] " + msg
-    Quickshell.execDetached(["sh", "-c", "printf '%s\\n' " + JSON.stringify(line) + " >> /tmp/oyaku-debug.log"])
-  }
 
   function checkAvailability() {
     if (transAvailable || checking || checkProc.running) return
@@ -75,13 +68,10 @@ Item {
     error = ""
     _stderr = ""
     loading = true
-    root._startTime = Date.now()
-    root.dbg("start pair=" + pair + " text=" + txt.substr(0, 40))
 
     // Use the detected path if `trans` isn't on the shell's inherited PATH.
     var bin = root.transPath !== "" ? root.transPath : "trans"
     transProc.command = [bin, "-b", "-no-ansi", pair, txt]
-    root.dbg("exec " + bin)
     transProc.running = true
     timeoutTimer.restart()
   }
@@ -98,7 +88,6 @@ Item {
         root.transPath = path
         root.checking = false
         root.error = ""
-        root.dbg("check path=" + path)
         if (root._pending) {
           var p = root._pending
           root._pending = null
@@ -126,7 +115,6 @@ Item {
     stdout: StdioCollector {
       waitForEnd: true
       onStreamFinished: {
-        root.dbg("stdout len=" + String(text || "").length)
         if (!root.loading) return
         root.result = String(text || "").trim()
         if (root.result !== "") {
@@ -140,12 +128,10 @@ Item {
       waitForEnd: true
       onStreamFinished: {
         root._stderr = String(text || "").trim()
-        root.dbg("stderr: " + root._stderr.substr(0, 200))
       }
     }
     onExited: function(exitCode) {
       root.timeoutTimer.stop()
-      root.dbg("exited code=" + exitCode + " loading=" + root.loading + " aborting=" + root._aborting + " resultLen=" + root.result.length)
 
       if (root._aborting) {
         root._aborting = false
@@ -170,7 +156,6 @@ Item {
     id: timeoutTimer
     interval: 30000
     onTriggered: {
-      root.dbg("timeout fired running=" + transProc.running + " resultLen=" + root.result.length)
       if (transProc.running) {
         root._aborting = true
         transProc.running = false

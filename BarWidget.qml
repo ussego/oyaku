@@ -8,7 +8,7 @@ BarWidget {
   id: root
   moduleName: "ussego.oyaku"
 
-  readonly property string buttonText: "󰊿"
+  readonly property string buttonText: "󰗊"
 
   // Panel lifecycle contract used by the bar's popout coordinator and shell IPC.
   readonly property bool opened: panelLoader.item

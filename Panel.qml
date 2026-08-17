@@ -489,7 +489,7 @@ Panel {
 
         Button {
           width: parent.width
-          iconText: "󰊿"
+          iconText: "󰗊"
           text: "Translate"
           bordered: true
           foreground: root.contentForeground

@@ -61,11 +61,13 @@ Or edit them directly in `shell.json`, for example:
 Oyaku exposes `omarchy-shell` IPC targets under `ussego.oyaku`, so you can bind hotkeys or scripts to it:
 
 ```sh
-omarchy-shell ussego.oyaku open    # open the panel
-omarchy-shell ussego.oyaku close   # close the panel
-omarchy-shell ussego.oyaku show    # alias for open
-omarchy-shell ussego.oyaku hide    # alias for close
-omarchy-shell ussego.oyaku toggle  # toggle the panel
+omarchy-shell ussego.oyaku open       # open the panel
+omarchy-shell ussego.oyaku close      # close the panel
+omarchy-shell ussego.oyaku show       # alias for open
+omarchy-shell ussego.oyaku hide       # alias for close
+omarchy-shell ussego.oyaku toggle     # toggle the panel
+omarchy-shell ussego.oyaku paste      # open and paste the clipboard text
+omarchy-shell ussego.oyaku translate  # open, paste clipboard, and translate
 ```
 
 For example, add to `~/.config/hypr/bindings.lua`:
@@ -73,6 +75,7 @@ For example, add to `~/.config/hypr/bindings.lua`:
 ```lua
 hl.unbind("SUPER + SHIFT + T")
 o.bind("SUPER + SHIFT + T", "Open oyaku", "omarchy-shell ussego.oyaku toggle")
+o.bind("SUPER + CTRL + T", "Translate clipboard", "omarchy-shell ussego.oyaku translate")
 ```
 
 ## Remove

@@ -35,6 +35,16 @@ BarWidget {
 
   function toggle() { root.togglePanel() }
 
+  function paste() {
+    root.open()
+    if (panelLoader.item) panelLoader.item.pasteFromClipboard(false)
+  }
+
+  function translate() {
+    root.open()
+    if (panelLoader.item) panelLoader.item.pasteFromClipboard(true)
+  }
+
   function closeForPopoutSwitch() {
     if (panelLoader.item) panelLoader.item.closeForPopoutSwitch()
   }

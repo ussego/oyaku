@@ -1,5 +1,6 @@
 import QtQuick
 import Quickshell
+import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import QtQuick.Controls as QQC
@@ -9,7 +10,7 @@ Panel {
   id: root
   moduleName: "ussego.oyaku"
   ipcTarget: "ussego.oyaku"
-  manageIpc: true
+  manageIpc: false
 
   property var anchorItem: null
   property var hostWidget: null
@@ -102,6 +103,9 @@ Panel {
   property string inputText: ""
   property string resultText: ""
 
+  // Used by clipboard-paste IPC commands to trigger translation after pasting.
+  property bool _translateAfterPaste: false
+
   // User-configurable quick-target buttons; falls back to the default list.
   property var quickTargets: setting("targets", root.defaultTargets)
 
@@ -186,6 +190,12 @@ Panel {
     Quickshell.execDetached(["bash", "-c", "printf %s " + Util.shellQuote(text) + " | wl-copy"])
   }
 
+  function pasteFromClipboard(andTranslate) {
+    if (clipboardProc.running) return
+    root._translateAfterPaste = andTranslate === true
+    clipboardProc.running = true
+  }
+
   onSourceTextChanged: { if (sourceDropdown) sourceDropdown.value = root.sourceText }
   onTargetTextChanged: { if (targetDropdown) targetDropdown.value = root.targetText }
 
@@ -207,6 +217,44 @@ Panel {
     id: service
     onResultChanged: { root.resultText = service.result }
     onErrorChanged: {}
+  }
+
+  Process {
+    id: clipboardProc
+    command: ["wl-paste", "--no-newline"]
+    stdout: StdioCollector {
+      waitForEnd: true
+      onStreamFinished: {
+        var text = String(this.text || "").trim()
+        if (inputArea) {
+          inputArea.text = text
+          inputArea.forceActiveFocus()
+        }
+        if (root._translateAfterPaste && text !== "" && service.transAvailable)
+          root.doTranslate()
+        root._translateAfterPaste = false
+      }
+    }
+  }
+
+  IpcHandler {
+    target: root.ipcTarget
+
+    function open() { root.open() }
+    function close() { root.close() }
+    function show() { root.open() }
+    function hide() { root.close() }
+    function toggle() { root.toggle() }
+
+    function paste() {
+      root.open()
+      root.pasteFromClipboard(false)
+    }
+
+    function translate() {
+      root.open()
+      root.pasteFromClipboard(true)
+    }
   }
 
   KeyboardPanel {

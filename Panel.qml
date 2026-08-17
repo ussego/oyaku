@@ -440,22 +440,14 @@ Panel {
           }
         }
 
-        // Multi-line source text.
-        QQC.TextArea {
-          id: inputArea
+        // Multi-line source text with vertical scrolling for long input.
+        QQC.ScrollView {
+          id: inputScroll
           width: parent.width
           height: Style.space(96)
-          color: root.contentForeground
-          font.family: root.contentFontFamily
-          font.pixelSize: Style.font.body
-          placeholderText: "Enter text to translate…"
-          placeholderTextColor: Qt.darker(root.contentForeground, 1.6)
-          selectionColor: Style.selectionFillFor(root.contentForeground, Color.accent)
-          selectedTextColor: root.contentForeground
-          wrapMode: QQC.TextArea.Wrap
-          activeFocusOnTab: false
-          text: ""
-          onTextChanged: root.inputText = text
+          clip: true
+          QQC.ScrollBar.horizontal.policy: QQC.ScrollBar.AlwaysOff
+          QQC.ScrollBar.vertical.policy: QQC.ScrollBar.AsNeeded
 
           background: BorderSurface {
             color: Style.controlFill(inputArea.activeFocus, false, root.contentForeground, Color.accent)
@@ -463,16 +455,34 @@ Panel {
             radius: Style.cornerRadius
           }
 
-          Keys.onPressed: function(event) {
-            if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true; return }
-            if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
-              root.switchPanel((event.modifiers & Qt.ShiftModifier) || event.key === Qt.Key_Backtab ? -1 : 1)
-              event.accepted = true
-              return
-            }
-            if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && !(event.modifiers & Qt.ShiftModifier)) {
-              root.doTranslate()
-              event.accepted = true
+          QQC.TextArea {
+            id: inputArea
+            width: inputScroll.availableWidth
+            height: Math.max(implicitHeight, inputScroll.availableHeight)
+            color: root.contentForeground
+            font.family: root.contentFontFamily
+            font.pixelSize: Style.font.body
+            placeholderText: "Enter text to translate…"
+            placeholderTextColor: Qt.darker(root.contentForeground, 1.6)
+            selectionColor: Style.selectionFillFor(root.contentForeground, Color.accent)
+            selectedTextColor: root.contentForeground
+            wrapMode: QQC.TextArea.Wrap
+            activeFocusOnTab: false
+            text: ""
+            background: null
+            onTextChanged: root.inputText = text
+
+            Keys.onPressed: function(event) {
+              if (event.key === Qt.Key_Escape) { root.close(); event.accepted = true; return }
+              if (event.key === Qt.Key_Tab || event.key === Qt.Key_Backtab) {
+                root.switchPanel((event.modifiers & Qt.ShiftModifier) || event.key === Qt.Key_Backtab ? -1 : 1)
+                event.accepted = true
+                return
+              }
+              if ((event.key === Qt.Key_Return || event.key === Qt.Key_Enter) && !(event.modifiers & Qt.ShiftModifier)) {
+                root.doTranslate()
+                event.accepted = true
+              }
             }
           }
         }

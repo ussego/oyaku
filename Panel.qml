@@ -4,8 +4,8 @@ import Quickshell.Io
 import qs.Commons
 import qs.Ui
 import QtQuick.Controls as QQC
+import "Languages.js" as Languages
 
-// Oyaku translation panel. Loaded internally by BarWidget.qml; not a standalone panel plugin.
 Panel {
   id: root
   moduleName: "ussego.oyaku"
@@ -20,98 +20,15 @@ Panel {
   readonly property string contentFontFamily: bar ? bar.fontFamily : Style.font.family
   readonly property var defaultTargets: ["en", "es", "ja"]
 
-  readonly property var languageOptions: [
-    { value: "af", label: "Afrikaans" },
-    { value: "sq", label: "Albanian" },
-    { value: "am", label: "Amharic" },
-    { value: "ar", label: "Arabic" },
-    { value: "hy", label: "Armenian" },
-    { value: "az", label: "Azerbaijani" },
-    { value: "eu", label: "Basque" },
-    { value: "bn", label: "Bengali" },
-    { value: "bs", label: "Bosnian" },
-    { value: "bg", label: "Bulgarian" },
-    { value: "ca", label: "Catalan" },
-    { value: "zh", label: "Chinese" },
-    { value: "zh-TW", label: "Chinese (Traditional)" },
-    { value: "hr", label: "Croatian" },
-    { value: "cs", label: "Czech" },
-    { value: "da", label: "Danish" },
-    { value: "nl", label: "Dutch" },
-    { value: "en", label: "English" },
-    { value: "et", label: "Estonian" },
-    { value: "fi", label: "Finnish" },
-    { value: "fr", label: "French" },
-    { value: "gl", label: "Galician" },
-    { value: "ka", label: "Georgian" },
-    { value: "de", label: "German" },
-    { value: "el", label: "Greek" },
-    { value: "gu", label: "Gujarati" },
-    { value: "ht", label: "Haitian Creole" },
-    { value: "ha", label: "Hausa" },
-    { value: "he", label: "Hebrew" },
-    { value: "hi", label: "Hindi" },
-    { value: "hu", label: "Hungarian" },
-    { value: "is", label: "Icelandic" },
-    { value: "id", label: "Indonesian" },
-    { value: "ga", label: "Irish" },
-    { value: "it", label: "Italian" },
-    { value: "ja", label: "Japanese" },
-    { value: "kn", label: "Kannada" },
-    { value: "ko", label: "Korean" },
-    { value: "lv", label: "Latvian" },
-    { value: "lt", label: "Lithuanian" },
-    { value: "mk", label: "Macedonian" },
-    { value: "ms", label: "Malay" },
-    { value: "ml", label: "Malayalam" },
-    { value: "mt", label: "Maltese" },
-    { value: "mi", label: "Maori" },
-    { value: "mr", label: "Marathi" },
-    { value: "mn", label: "Mongolian" },
-    { value: "ne", label: "Nepali" },
-    { value: "no", label: "Norwegian" },
-    { value: "fa", label: "Persian" },
-    { value: "pl", label: "Polish" },
-    { value: "pt", label: "Portuguese" },
-    { value: "pa", label: "Punjabi" },
-    { value: "ro", label: "Romanian" },
-    { value: "ru", label: "Russian" },
-    { value: "sr", label: "Serbian" },
-    { value: "sk", label: "Slovak" },
-    { value: "sl", label: "Slovenian" },
-    { value: "so", label: "Somali" },
-    { value: "es", label: "Spanish" },
-    { value: "sw", label: "Swahili" },
-    { value: "sv", label: "Swedish" },
-    { value: "tl", label: "Tagalog" },
-    { value: "ta", label: "Tamil" },
-    { value: "te", label: "Telugu" },
-    { value: "th", label: "Thai" },
-    { value: "tr", label: "Turkish" },
-    { value: "uk", label: "Ukrainian" },
-    { value: "ur", label: "Urdu" },
-    { value: "vi", label: "Vietnamese" },
-    { value: "cy", label: "Welsh" },
-    { value: "yi", label: "Yiddish" },
-    { value: "zu", label: "Zulu" }
-  ]
-  readonly property var sourceOptions: [{ value: "auto", label: "Auto-detect" }].concat(root.languageOptions)
-
-  // Session input state.
   property string sourceText: "auto"
   property string targetText: setting("target", defaultTargets[0])
   property string inputText: ""
   property string resultText: ""
 
-  // Used by clipboard-paste IPC commands to trigger translation after pasting.
-  property bool _translateAfterPaste: false
+  property bool translateAfterPaste: false
+  property string previousTarget: ""
 
-  // User-configurable quick-target buttons; falls back to the default list.
   property var quickTargets: setting("targets", root.defaultTargets)
-
-  // Tracks the target language before the most recent target change,
-  // so a source/target collision can fall back to the previous target.
-  property string _previousTarget: ""
 
   function open() {
     root.controller.show()
@@ -142,7 +59,7 @@ Panel {
   function setTarget(code) {
     var c = String(code || "").trim().toLowerCase()
     if (c === "" || c === root.targetText) return
-    root._previousTarget = root.targetText
+    root.previousTarget = root.targetText
     root.targetText = c
     persistSettings({ target: c })
   }
@@ -192,7 +109,7 @@ Panel {
 
   function pasteFromClipboard(andTranslate) {
     if (clipboardProc.running) return
-    root._translateAfterPaste = andTranslate === true
+    root.translateAfterPaste = andTranslate === true
     clipboardProc.running = true
   }
 
@@ -216,7 +133,6 @@ Panel {
   TranslateService {
     id: service
     onResultChanged: { root.resultText = service.result }
-    onErrorChanged: {}
   }
 
   Process {
@@ -230,9 +146,9 @@ Panel {
           inputArea.text = text
           inputArea.forceActiveFocus()
         }
-        if (root._translateAfterPaste && text !== "" && service.transAvailable)
+        if (root.translateAfterPaste && text !== "" && service.transAvailable)
           root.doTranslate()
-        root._translateAfterPaste = false
+        root.translateAfterPaste = false
       }
     }
   }
@@ -290,7 +206,6 @@ Panel {
           horizontalAlignment: Text.AlignHCenter
         }
 
-        // Source language row.
         Row {
           width: parent.width
           spacing: Style.space(8)
@@ -313,12 +228,10 @@ Panel {
             placeholderText: "Search language..."
             foreground: root.contentForeground
             fontFamily: root.contentFontFamily
-            options: root.sourceOptions
+            options: Languages.sourceOptions()
             onChanged: function(v) {
-              // If the new source collides with the current target, move the target
-              // to the previous target (defaulting to English) instead of the source.
               if (v === root.targetText) {
-                var fallback = root._previousTarget || "en"
+                var fallback = root.previousTarget || "en"
                 root.setTarget(fallback)
               }
               root.sourceText = v
@@ -337,7 +250,6 @@ Panel {
           }
         }
 
-        // Target language row: quick picks + a free-text field.
         Row {
           width: parent.width
           spacing: Style.space(8)
@@ -352,7 +264,7 @@ Panel {
           }
 
           Row {
-            id: quickTargets
+            id: quickTargetsRow
             anchors.verticalCenter: parent.verticalCenter
             spacing: Style.space(6)
 
@@ -360,7 +272,6 @@ Panel {
               model: root.quickTargets
 
               Button {
-                id: quickBtn
                 required property var modelData
                 text: String(modelData).toUpperCase()
                 selected: root.targetText === String(modelData).toLowerCase()
@@ -373,7 +284,7 @@ Panel {
                 MouseArea {
                   anchors.fill: parent
                   acceptedButtons: Qt.RightButton
-                  onClicked: root.removeQuickTarget(quickBtn.modelData)
+                  onClicked: root.removeQuickTarget(modelData)
                 }
               }
             }
@@ -412,7 +323,7 @@ Panel {
                 placeholderText: "Search language..."
                 foreground: root.contentForeground
                 fontFamily: root.contentFontFamily
-                options: root.languageOptions
+                options: Languages.options
                 onChanged: function(v) {
                   root.addQuickTarget(v)
                   addTargetPopup.close()
@@ -430,17 +341,14 @@ Panel {
             placeholderText: "Search language..."
             foreground: root.contentForeground
             fontFamily: root.contentFontFamily
-            options: root.languageOptions
+            options: Languages.options
             onChanged: function(v) {
-              // If the new target collides with the current source, swap the source
-              // to the previous target to keep the pair meaningful.
               if (v === root.sourceText) root.sourceText = root.targetText
               root.setTarget(v)
             }
           }
         }
 
-        // Multi-line source text with vertical scrolling for long input.
         QQC.ScrollView {
           id: inputScroll
           width: parent.width
@@ -498,7 +406,6 @@ Panel {
           onClicked: root.doTranslate()
         }
 
-        // Status / loading / error message.
         Text {
           width: parent.width
           visible: service.checking || service.loading || service.error !== ""
@@ -511,7 +418,6 @@ Panel {
           wrapMode: Text.WordWrap
         }
 
-        // Result area with one-click copy.
         Item {
           width: parent.width
           height: resultColumn.height

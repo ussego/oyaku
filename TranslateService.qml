@@ -2,12 +2,9 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
-// Spawns translate-shell (`trans`) and surfaces the result.
-// Keeps process handling out of the UI files.
 Item {
   id: root
 
-  // True once `trans` was found on PATH. Detection runs lazily on first use.
   property bool transAvailable: false
   property bool checking: false
   property bool loading: false
@@ -69,7 +66,6 @@ Item {
     _stderr = ""
     loading = true
 
-    // Use the detected path if `trans` isn't on the shell's inherited PATH.
     var bin = root.transPath !== "" ? root.transPath : "trans"
     transProc.command = [bin, "-b", "-no-ansi", pair, txt]
     transProc.running = true
@@ -78,7 +74,6 @@ Item {
 
   Process {
     id: checkProc
-    // Look in PATH, then a few common install locations (e.g. pip's --user bin dir).
     command: ["sh", "-c", 'cmd=$(command -v trans 2>/dev/null); [ -z "$cmd" ] && [ -x ~/.local/bin/trans ] && cmd=~/.local/bin/trans; [ -z "$cmd" ] && [ -x /usr/local/bin/trans ] && cmd=/usr/local/bin/trans; [ -z "$cmd" ] && [ -x /usr/bin/trans ] && cmd=/usr/bin/trans; printf "%s\\n" "$cmd"']
     stdout: StdioCollector {
       waitForEnd: true

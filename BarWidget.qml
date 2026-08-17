@@ -3,14 +3,12 @@ import Quickshell
 import qs.Commons
 import qs.Ui
 
-// Oyaku bar widget: a compact translate button that hosts the translation panel.
 BarWidget {
   id: root
   moduleName: "ussego.oyaku"
 
   readonly property string buttonText: "󰗊"
 
-  // Panel lifecycle contract used by the bar's popout coordinator and shell IPC.
   readonly property bool opened: panelLoader.item
     ? panelLoader.item.opened === true
     : false
@@ -28,12 +26,7 @@ BarWidget {
 
   function show() { root.open() }
   function hide() { root.close() }
-
-  function togglePanel() {
-    if (panelLoader.item) panelLoader.item.toggle()
-  }
-
-  function toggle() { root.togglePanel() }
+  function toggle() { if (panelLoader.item) panelLoader.item.toggle() }
 
   function paste() {
     root.open()
@@ -82,7 +75,7 @@ BarWidget {
     text: root.buttonText
     tooltipText: "Translate"
     onPressed: function(buttonCode) {
-      if (buttonCode === Qt.LeftButton) root.togglePanel()
+      if (buttonCode === Qt.LeftButton) root.toggle()
     }
   }
 }

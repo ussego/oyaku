@@ -5,7 +5,7 @@
   "version": "1.0.0",
   "author": "ussego",
   "license": "MIT",
-  "description": "A lightweight bar widget that translates text on demand via translate-shell, without leaving the bar.",
+  "description": "Omarchy bar widget that translates text using translate-shell.",
   "kinds": ["bar-widget"],
   "entryPoints": { "barWidget": "BarWidget.qml" },
   "barWidget": {

@@ -75,7 +75,7 @@ For example, add to `~/.config/hypr/bindings.lua`:
 ```lua
 hl.unbind("SUPER + SHIFT + T")
 o.bind("SUPER + SHIFT + T", "Open oyaku", "omarchy-shell ussego.oyaku toggle")
-o.bind("SUPER + CTRL + T", "Translate clipboard", "omarchy-shell ussego.oyaku translate")
+o.bind("SUPER + CTRL + SHIFT + T", "Translate clipboard", "omarchy-shell ussego.oyaku translate")
 ```
 
 ## Remove
